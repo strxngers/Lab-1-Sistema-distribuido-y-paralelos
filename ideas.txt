@@ -1,0 +1,263 @@
+
+
+
+
+void void FiltroRuido:aplicarFiltroRuido(std::vector<std::vector<double>>& imagen, double desviacion_estandar) {
+    std::default_random_engine generator;
+    std::normal_distribution<double> distribution(0.0, desviacion_estandar);
+
+    int imageHeight = imagen.size();
+    int imageWidth = imagen[0].size();
+
+    for (int i = 0; i < imageHeight; i++) {
+        for (int j = 0; j < imageWidth; j++) {
+            double ruido = distribution(generator);
+            imagen[i][j] += ruido;
+        }
+    }
+    return imagen;
+}
+
+
+
+
+
+
+
+
+
+Almacenamiento::Almacenamiento(int N){
+    this->N = N;
+    this->names = vector<string>(N);
+    this->image_data = vector<double*>(N);
+    // Inicializar width y height, ya no existe sizes
+    this->width = vector<int>(N);
+    this->height = vector<int>(N);
+    this->i = 0;
+}
+
+// method to add an image
+void Almacenamiento::addImage(string name, double* data, int width, int height){
+    this->names[i] = name;
+    this->image_data[i] = data;
+    this->width[i] = width;
+    this->height[i] = height;
+    i++;
+}
+
+// method to print all name of the images
+    void Almacenamiento::printNames(){
+    for(int j = 0; j < i; j++){
+        cout << this->names[j] << endl;
+    }
+}
+
+
+// method to get the image data
+double* Almacenamiento::getImageData(int index){
+    double* image = this->image_data[index];
+    image_data.erase(image_data.begin() + index);
+    //deleteImage(index);
+    return image;
+}
+
+/*
+// method to delete an image
+void Almacenamiento::deleteImage(int index){
+    // Liberar memoria
+    delete[] this->image_data[index];
+    // Mover los elementos
+    for(int j = index; j < i; j++){
+        this->names[j] = this->names[j+1];
+        this->image_data[j] = this->image_data[j+1];
+        this->sizes[0][j] = this->sizes[0][j+1];
+        this->sizes[1][j] = this->sizes[1][j+1];
+    }
+    i--;
+}
+*/
+
+// method to get the size of an image
+int* Almacenamiento::getSizes(int index){
+    returt this->width[index], this->height[index]; 
+}
+
+
+
+
+
+void Lectura::main(){
+    // Aquí va todo, leer y mandar a monitor
+    // Directorio donde se encuentran los archivos FITS
+    string directorio = ".";
+
+    // Prefijo y extensión de los archivos FITS a buscar
+    string prefijo = "image";
+    string extension = ".fits";
+    // indexa los archivos que cumplan con el criterio y los guarda en esa posición
+    int i = 0;
+    // Recorrer el directorio en busca de archivos que cumplan con el criterio
+    for (const auto& archivo : fs::directory_iterator(directorio)) {
+        if (archivo.is_regular_file() && archivo.path().extension() == extension &&
+                archivo.path().filename().string().find(prefijo) != string::npos) {
+                readImage(archivo.path().filename().string(), i);
+                // Guardar en el monitor
+                almacenamiento.addImage(names[i], image_data[i], sizes[0][i], sizes[1][i]);
+                i++;
+        }
+        if(i == N){
+            break;
+        }
+    }
+    almacenamiento.printNames();
+}
+
+// Constructor de la clase
+Lectura::Lectura(int N, string prefijo, Almacenamiento &almacenamiento): almacenamiento(almacenamiento){
+    this->N = N;
+    this->prefijo = prefijo;
+    this->names = vector<string>(N);
+    this->image_data = vector<double*>(N);
+    this->width = vector<int>(N);
+    this->height = vector<int>(N);
+    cout << "hola" << endl;
+}
+
+void Lectura::readImage(const string& nombreArchivo, int i){
+    fitsfile* fptr;
+    int status = 0;
+    cout << nombreArchivo << endl;
+    // Abrir el archivo FITS en modo de lectura
+    fits_open_file(&fptr, nombreArchivo.c_str(), READONLY, &status);
+    if (status != 0) {
+        fits_report_error(stderr, status);
+        return;
+    }
+
+    int bitpix, naxis;
+    long naxes[2];
+    cout << "salio1" << endl;
+    // Obtener información básica de la imagen FITS
+    fits_get_img_param(fptr, 2, &bitpix, &naxis, naxes, &status);
+    if (status != 0) {
+        fits_report_error(stderr, status); // Imprimir mensaje de error si falla la obtención de parámetros
+        exit(EXIT_FAILURE);
+    }
+    cout << "salio2" << endl;
+    // Verificar que la imagen tenga dos ejes (2D)
+    if (naxis != 2) {
+        cerr << "La imagen FITS no es 2D." << endl;
+        exit(EXIT_FAILURE);
+    }
+
+
+
+    // asignar Dimensiones de la imagen (ancho x alto) a vectores width y height
+    int width[i] = naxes[0];
+    int height[i] = naxes[1];
+
+    // Imprimir los valores de ancho y alto para verificar el tamaño del arreglo de datos
+    cout << "Ancho de la imagen: " << width << endl;
+    cout << "Altura de la imagen: " << height << endl;
+
+
+
+
+
+
+    cout << "salio3" << endl;
+    // Dimensiones de la imagen (ancho x alto)
+    //int width = naxes[0];
+    //int height = naxes[1];
+    // Crear un buffer para almacenar la imagen
+    double *image_data = new double[width * height];
+    long fpixel = 1; // Coordenadas del primer píxel a leer
+    // Leer toda la imagen
+    cout << "aa" << status << endl;
+    fits_read_img(fptr, TDOUBLE, fpixel, width * height, NULL, image_data, NULL, &status);
+    //fits_read_pix(fptr, TBYTE, fpixel, width * height, NULL, image_data, NULL, &status);
+    if (status != 0) {
+        cout << "a" << endl;
+        fits_report_error(stderr, status); // Imprimir mensaje de error si falla la lectura de la imagen
+        exit(EXIT_FAILURE);
+    }
+    cout << "salio4" << endl;
+
+    // Guardar en la lista
+    this->names[i] = nombreArchivo;
+    this->sizes[0][i] = width;
+    this->sizes[1][i] = height;
+    this->image_data[i] = image_data; 
+    cout << image_data << " " << width << " " << height << endl; 
+    cout << "salio5" << endl;
+
+    // Cerrar el archivo FITS
+    fits_close_file(fptr, &status);
+        
+
+} 
+
+
+
+// version 1
+    
+
+    int size = kernel.size();
+    int centro = size / 2;
+    // Creación de la imagen filtrada
+    for (int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+            image_data_filtered[i][j] = 0;
+            for (int k = 0; k < size; ++k) {
+                for (int l = 0; l < size; ++l) {
+                    int x = i + k - centro;
+                    int y = j + l - centro;
+                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                        image_data_filtered[i][j] += kernel[k][l] * image_data[x][y];
+                    }
+                }
+            }
+        }
+    }
+    // Imprimir la imagen filtrada
+    cout << "Imagen filtrada:" << endl;
+    for (int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+            cout << image_data_filtered[i][j] << "\t";
+        }
+        cout << endl;
+    }
+}
+
+
+
+
+// v2 
+void FiltroResolucion::aplicarFiltro(vector<vector<double>>& kernel, float** image_data, float** image_data_filtered, int* sizes[2]){
+    int ksize = kernel.size();
+    int centro = ksize / 2;
+    // Iterar sobre cada fila de la imagen
+    for (int y = 0; y < sizes[1]; y++) {
+        // Iterar sobre cada columna de la imagen
+        for (int x = 0; x < sizes[0]; x++) {
+            // Iterar sobre cada fila del kernel
+            for (int i = 0; i < ksize; i++) {
+                // Iterar sobre cada columna del kernel
+                for (int j = 0; j < ksize; j++) {
+                    // Calcular la posición del píxel en la imagen
+                    int x_imagen = x + i - centro;
+                    int y_imagen = y + j - centro;
+                    // Verificar que la posición del píxel esté dentro de la imagen
+                    if (x_imagen >= 0 && x_imagen < sizes[0] && y_imagen >= 0 && y_imagen < sizes[1]) {
+                        // Calcular el índice del píxel en la imagen
+                        int index = y_imagen * sizes[0] + x_imagen;
+                        // Calcular el índice del píxel en el kernel
+                        int index_kernel = j * ksize + i;
+                        // Aplicar la máscara de convolución
+                        image_data_filtered[y][x] += kernel[j][i] * image_data[y_imagen][x_imagen];
+                    }
+                }
+            }
+        }
+    }
+}

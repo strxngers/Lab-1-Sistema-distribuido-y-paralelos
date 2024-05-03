@@ -1,0 +1,123 @@
+#include "FiltroResolucion.h"
+
+void FiltroResolucion::main(){
+    // Crear el kernel
+    cout << "Creando kernel en main" << endl;
+    vector<vector<double>> kernel;
+    newKernel(kernel, 27, 0.92);
+    cout << "Kernel creado en main" << endl;
+    // ciclo que recorre todas las imagenes, crea el kernel, aplica el filtro y envía la imagen filtrada al monitor almacenamientoFiltrado
+    for (int i = 0; i < N; i++) {
+
+        // Obtener datos de la imagen original
+        double* image_data = almacenamiento.getImageData();
+        // width y height de la imagen
+        int width = almacenamiento.getWidth();
+        int height = almacenamiento.getHeight();
+        // nombre de la imagen
+        name = almacenamiento.getName();
+
+        // Crear un arreglo para almacenar la imagen filtrada
+        double* image_data_filtered = new double[height * width];
+
+        // Aplicar el filtro
+        aplicarFiltro(kernel, image_data, image_data_filtered, height, width);
+        // Agregar la imagen filtrada al monitor almacenamientoFiltrado
+        almacenamientoFiltrado.addImage(name, image_data_filtered, width, height);
+        cout << "Imagen " << i+1 << "  filtrada agregada" << endl;
+        // Liberar la memoria asignada dinámicamente
+        //delete[] image_data_filtered;
+        //delete[] image_data;
+    }
+    
+    //flagEnd = true;
+}
+
+FiltroResolucion::FiltroResolucion(int N, double theta, Almacenamiento &almacenamiento, Almacenamiento &almacenamientoFiltrado)
+    : almacenamiento(almacenamiento), almacenamientoFiltrado(almacenamientoFiltrado) {
+    this->N = N; // Establecer N
+    this->theta = theta; // Establecer theta
+    //this->flagEnd = false; // Establecer flagEnd
+    // Cuerpo del constructor
+    cout << "Constructor --- RESOLUCION" << endl;
+}
+
+/*
+bool FiltroResolucion::tareaHaTerminado() {
+    return flagEnd;
+}
+*/
+
+// Método que crea el kernel de la máscara de convolución
+void FiltroResolucion::newKernel(vector<vector<double>>& kernel, int ksize, double theta) {
+    cout << "Creando kernel" << endl;
+    const double sigma_x = 3.5;
+    const double sigma_y = 3.5; 
+    double sum = 0.0;
+    int centro = ksize / 2;
+    double a = cos(theta) * cos(theta) / (2 * sigma_x * sigma_x) + sin(theta) * sin(theta) / (2 * sigma_y * sigma_y);
+    double b = -sin(2 * theta) / (4 * sigma_x * sigma_x) + sin(2 * theta) / (4 * sigma_y * sigma_y);
+    double c = sin(theta) * sin(theta) / (2 * sigma_x * sigma_x) + cos(theta) * cos(theta) / (2 * sigma_y * sigma_y);
+    kernel.resize(ksize, vector<double>(ksize, 0));
+    cout << a << " " << b << " " << c << endl;
+    // Creación del kernel
+    for (int i = 0; i < ksize; ++i) {
+        for (int j = 0; j < ksize; ++j) {
+            double x = i - centro;
+            double y = j - centro;
+            kernel[i][j] = exp(-(a * x * x + 2 * b * x * y + c * y * y));
+            sum += kernel[i][j];
+        }
+    }
+    cout << sum << endl;
+    cout << "kernel creado" << endl;
+    // Normalización del kernel
+    for (int i = 0; i < ksize; ++i) {
+        for (int j = 0; j < ksize; ++j) {
+            kernel[i][j] /= sum;
+            //cout << "en normalizar" << endl;
+        } 
+    }  
+    cout << "kernel normalizado" << endl;
+}
+
+// Método al que se le entrega un kernel y una imagen que se encuentra como puntero dentro del vector y devuelve la imagen filtrada
+void FiltroResolucion::aplicarFiltro(vector<vector<double>>& kernel, double* image_data, double* image_data_filtered , int height, int width) {
+    cout << "Aplicando filtro" << endl;
+    int ksize = kernel.size();
+    int centro = ksize / 2;
+    // Iterar sobre cada fila de la imagen
+    for (int y = 0; y < height; y++) {
+        // Iterar sobre cada columna de la imagen
+        for (int x = 0; x < width; x++) {
+            // Calcular el índice del píxel en la imagen
+            int index = y * width + x;
+            // Inicializar el valor del píxel filtrado
+            image_data_filtered[index] = 0;
+            // Iterar sobre cada fila del kernel
+            for (int i = 0; i < ksize; i++) {
+                // Iterar sobre cada columna del kernel
+                for (int j = 0; j < ksize; j++) {
+                    // Calcular las coordenadas del píxel en la imagen
+                    int x_imagen = x + i - centro;
+                    int y_imagen = y + j - centro;
+                    // Verificar que el píxel esté dentro de la imagen
+                    if (x_imagen >= 0 && x_imagen < width && y_imagen >= 0 && y_imagen < height) {
+                        // Calcular el índice del píxel en la imagen
+                        int index_imagen = y_imagen * width + x_imagen;
+                        // Sumar el valor del píxel multiplicado por el valor del kernel
+                        image_data_filtered[index] += image_data[index_imagen] * kernel[i][j];
+                    }
+                }
+            }
+        }
+    }
+    cout << "Estoy aquí funcionando" << endl;
+}
+
+
+
+
+
+
+
