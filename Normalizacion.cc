@@ -42,6 +42,18 @@ Normalizacion::Normalizacion(int N,double Jmax, Almacenamiento &almacenamiento, 
 }
 
 void Normalizacion::normalizarImagen(double* image_data, double* image_data_normalized, int height, int width, double Jmax) {
+    // Verificar punteros nulos
+    if (image_data == nullptr || image_data_normalized == nullptr) {
+        cout << "Error: Se encontró un puntero nulo." << endl;
+        return;
+    }
+
+    // Verificar dimensiones de la imagen
+    if (height <= 0 || width <= 0) {
+        cout << "Error: Dimensiones de la imagen inválidas." << endl;
+        return;
+    }
+
     double min_intensity = image_data[0];
     double max_intensity = image_data[0];
 
@@ -55,24 +67,22 @@ void Normalizacion::normalizarImagen(double* image_data, double* image_data_norm
         }
     }
 
-    // Si el valor mínimo y máximo son iguales, evita la división por cero
+    // Manejar caso de división por cero
     if (max_intensity == min_intensity) {
-        // Establece el valor máximo y mínimo a diferentes valores
-        max_intensity = min_intensity + 1.0;
+        max_intensity = min_intensity + 1.0; // Asignar un valor predeterminado
     }
 
     cout << "min_intensity: " << min_intensity << endl;
-    
+
     // Normalizar la imagen en base al valor máximo de intensidad Jmax
     for (int i = 0; i < height * width; i++) {
-        // Convertir el valor de intensidad a mili Janskys
-        //double intensity_mJy = image_data[i] * 1000.0; // Convertir a mili Janskys
-        // Normalizar la imagen
         image_data_normalized[i] = (image_data[i] - min_intensity) / (max_intensity - min_intensity) * Jmax;
     }
 
-    //cout << "Imagen normalizada" << endl;
+    // Impresión de depuración
+    cout << "Imagen normalizada correctamente." << endl;
 }
+
 
 
 /*
