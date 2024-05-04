@@ -28,7 +28,7 @@ _Task Normalizacion{
         string name;
         double Jmax; // Valor máximo de intensidad en mJy
         int N;
-        bool flagEnd;
+        //bool flagEnd;
         void main();
     
     public:
@@ -37,6 +37,6 @@ _Task Normalizacion{
         // Método que normaliza la imagen en base al valor máximo de intensidad
         void normalizarImagen(double* image_data, double* image_data_normalized, int height, int width, double Jmax);
         // Método que retorna si la tarea ha terminado
-        bool tareaHaTerminado();
+        //bool tareaHaTerminado();
 };
 #endif        

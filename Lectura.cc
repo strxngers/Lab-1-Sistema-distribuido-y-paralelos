@@ -17,13 +17,15 @@ void Lectura::main() {
                 archivo.path().filename().string().find(prefijo) != string::npos) {
             readImage(archivo.path().filename().string(), i);
             // Guardar en el monitor
-            almacenamiento.addImage(names[i], image_data[i], width[i], height[i]);
+            almacenamiento.addImage(names[i], image_data[i], width[i], height[i], almacenamiento.getMonitorName());
             i++;
+            //delete[] image_data[i];
         }
         if(i == N) {
             break;
         }
     }
+    
     //almacenamiento.printNames();
 }
 

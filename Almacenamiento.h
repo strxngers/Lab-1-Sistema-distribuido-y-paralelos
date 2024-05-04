@@ -25,15 +25,16 @@ _Monitor Almacenamiento{
         // Cantidad máxima de imágenes que se pueden guardar
         int N;
         // Lista de tamaño de imágenes
-          vector<int> width;
-         vector<int> height;
+        vector<int> width;
+        vector<int> height;
         // Contador
         int i;
+        string monitorName;
     public:
         // Constructor de la clase
-        Almacenamiento(int N);
+        Almacenamiento(int N, string monitorName);
         // metodo para agregar una imagen	
-        void addImage(string name, double* data, int width, int height);
+        void addImage(string name, double* data, int width, int height, string monitorName);
         // metodo para imprimir los nombres de las imagenes
         void printNames();
         // metodo para obtener los datos de una imagen
@@ -46,6 +47,8 @@ _Monitor Almacenamiento{
         int getHeight();
         // metodo para obtener el nombre de la imagen
         string getName();
+        // metodo para obtener el monitorName
+        string getMonitorName();
 
 };
 #endif

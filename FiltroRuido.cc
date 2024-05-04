@@ -17,7 +17,7 @@ void FiltroRuido::main() {
         // Agregar ruido a la imagen
         agregarRuido(image_data, image_data_filtered, height, width, sigma);
         // Agregar la imagen filtrada al monitor almacenamientoFiltrado
-        almacenamientoFiltrado.addImage(name, image_data_filtered, width, height);
+        almacenamientoFiltrado.addImage(name, image_data_filtered, width, height,almacenamientoFiltrado.getMonitorName() );
         cout << "Imagen " << i + 1 << "  con ruido agregada" << endl;
         // Liberar la memoria asignada dinámicamente
         //delete[] image_data_filtered;
