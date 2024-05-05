@@ -5,21 +5,15 @@ void Escritura::main() {
     for (int i = 0; i < N; i++) {
         // Obtener datos de la imagen normalizada
         double* image_data = almacenamiento.getImageData();
-        if (image_data != NULL) {
-            cout << "Imagen obtenida" << endl;
-        } else {
-            cout << "No se pudo obtener la imagen" << endl;
-        }
         // width y height de la imagen
         int width = almacenamiento.getWidth();
         int height = almacenamiento.getHeight();
         // crear el nombre de la nueva imagen a partir del prefijo de salida y el contador i + 1
-        string name = prefijoSalida + to_string(i + 1) + ".fits";
+        string name = "!" + prefijoSalida + to_string(i + 1) + ".fits";
+        cout << "Escribiendo " << name << "..." << endl;
         // Escribir la imagen en un archivo FITS
         writeImage(name, image_data, width, height);
-        cout << "Imagen " << i + 1 << " escrita" << endl;
-        // Liberar la memoria asignada dinámicamente
-        //delete[] image_data;
+        cout << "Imagen Out " << i + 1 << " escrita" << endl;
     }
     flagEnd = true;
 }

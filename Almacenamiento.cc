@@ -18,8 +18,9 @@ void Almacenamiento::addImage(string name, double* data, int width, int height, 
     this->height[i] = height;
     this->monitorName = monitorName;
     // imprimir el nombre de la imagen que se esta guardando
-    cout << "Imagen " << name << " guardada en " << monitorName << endl;
+    cout << name << " guardada en " << monitorName << endl;
     i++;
+
     noEmpty.signal();
 }
 
@@ -42,7 +43,9 @@ double* Almacenamiento::getImageData() {
     }
     double* image = image_data.front();
     cout << monitorName << " entrega: " << this->names[0] << endl;
+
     image_data.erase(image_data.begin() + 0);
+    i--;
     return image;
 }
 
